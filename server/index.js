@@ -45,6 +45,8 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api', apiRoutes);
+// Also mount directly so any call made without /api prefix works seamlessly
+app.use(apiRoutes);
 
 // In production: Serve frontend build if client/dist exists
 import path from 'path';

@@ -1,4 +1,10 @@
-export const API_BASE = import.meta.env.VITE_API_BASE || '/api';
+const rawBase = import.meta.env.VITE_API_BASE ? String(import.meta.env.VITE_API_BASE).trim() : '';
+
+export const API_BASE = (() => {
+  if (!rawBase || rawBase === '/api') return '/api';
+  if (rawBase.endsWith('/api')) return rawBase;
+  return `${rawBase.replace(/\/+$/, '')}/api`;
+})();
 
 export function getToken() {
   return localStorage.getItem('upi_auth_token');
