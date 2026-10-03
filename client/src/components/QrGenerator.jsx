@@ -18,6 +18,7 @@ import {
   Layers,
   Check,
   ExternalLink,
+  Smartphone,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { api, getToken, API_BASE } from '../api';
@@ -264,7 +265,31 @@ function QrCard({ slice, sessionId, totalSlices }) {
 function PayingScreen({ session: initialSession, customer, onDone, onNewBill }) {
   const [session, setSession] = useState(initialSession);
   const [connected, setConnected] = useState(false);
+  const [sharePhone, setSharePhone] = useState(customer?.customerPhone || initialSession?.customerPhone || '');
+  const [sharing, setSharing] = useState(false);
+  const [shareSuccess, setShareSuccess] = useState('');
+  const [shareError, setShareError] = useState('');
   const esRef = useRef(null);
+
+  async function handleShareToCustomer() {
+    const clean = sharePhone.replace(/\D/g, '').slice(-10);
+    if (!clean || clean.length < 10) {
+      setShareError('Please enter a valid 10-digit mobile number.');
+      return;
+    }
+    setSharing(true);
+    setShareError('');
+    setShareSuccess('');
+    try {
+      await api.shareBillWithCustomer(session.sessionId, clean, customer?.customerName);
+      setShareSuccess(`✓ Bill shared with customer (+91 ${clean})! Live popoff active on customer's screen.`);
+      setTimeout(() => setShareSuccess(''), 5000);
+    } catch (err) {
+      setShareError(err.message || 'Failed to share bill with customer.');
+    } finally {
+      setSharing(false);
+    }
+  }
 
   /* Open SSE connection — instant push from server */
   useEffect(() => {
@@ -440,6 +465,69 @@ function PayingScreen({ session: initialSession, customer, onDone, onNewBill }) 
             <RotateCcw className="w-4 h-4" />
           </button>
         </div>
+      </div>
+
+      {/* ── Share Bill to Customer Screen (Vendor -> Customer Live Popoff) ── */}
+      <div className="mb-5 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-2xl p-4 border border-blue-200 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+              <Smartphone className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-black text-sm text-slate-900 flex items-center gap-1.5">
+                <span>Share Bill to Customer Screen</span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-600 text-white uppercase tracking-wider">
+                  Live Popoff
+                </span>
+              </h3>
+              <p className="text-xs text-slate-500">
+                Enter customer mobile number to trigger an instant live popup on their screen with Google Pay / UPI
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="relative flex-1 sm:w-44">
+              <span className="absolute left-3 top-2.5 text-xs font-bold text-slate-400">+91</span>
+              <input
+                type="tel"
+                value={sharePhone}
+                onChange={(e) => setSharePhone(e.target.value)}
+                placeholder="Customer Mobile"
+                inputMode="tel"
+                className="w-full pl-10 pr-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-600/20"
+              />
+            </div>
+            <button
+              onClick={handleShareToCustomer}
+              disabled={sharing || sharePhone.length < 10}
+              className="py-2 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm shadow-blue-600/20 transition shrink-0 cursor-pointer"
+            >
+              {sharing ? (
+                <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Share Bill</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {shareSuccess && (
+          <div className="mt-2.5 p-2 rounded-xl bg-emerald-100/80 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2 animate-in fade-in duration-200">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{shareSuccess}</span>
+          </div>
+        )}
+
+        {shareError && (
+          <div className="mt-2.5 p-2 rounded-xl bg-red-100/80 border border-red-200 text-red-800 text-xs font-bold flex items-center gap-2">
+            <span>{shareError}</span>
+          </div>
+        )}
       </div>
 
       {/* Celebration Banner when all QRs have green ticks */}

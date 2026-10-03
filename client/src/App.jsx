@@ -7,6 +7,7 @@ import AdminDashboard from './components/AdminDashboard';
 import SettingsPage from './components/SettingsPage';
 import ChatBox from './components/ChatBox';
 import CustomerPaymentPage from './components/CustomerPaymentPage';
+import CustomerDashboard from './components/CustomerDashboard';
 import { api, setToken, getToken } from './api';
 import { RefreshCw } from 'lucide-react';
 
@@ -36,7 +37,13 @@ export default function App() {
       try {
         const profile = await api.getMe();
         setUser(profile);
-        setCurrentView(profile.role === 'admin' ? 'admin' : 'generate');
+        if (profile.role === 'customer') {
+          setCurrentView('customer-portal');
+        } else if (profile.role === 'admin') {
+          setCurrentView('admin');
+        } else {
+          setCurrentView('generate');
+        }
       } catch {
         setToken(null); // expired or invalid token
       } finally {
@@ -54,7 +61,13 @@ export default function App() {
   function handleLoginSuccess(token, userData) {
     setToken(token);
     setUser(userData);
-    setCurrentView(userData.role === 'admin' ? 'admin' : 'generate');
+    if (userData.role === 'customer') {
+      setCurrentView('customer-portal');
+    } else if (userData.role === 'admin') {
+      setCurrentView('admin');
+    } else {
+      setCurrentView('generate');
+    }
   }
 
   function handleLogout() {
@@ -111,6 +124,11 @@ export default function App() {
             user={user}
             onProfileUpdated={(updated) => setUser((prev) => ({ ...prev, ...updated }))}
           />
+        )}
+
+        {/* ── Customer Portal (PaySplit 2.0) ──────────── */}
+        {user.role === 'customer' && (
+          <CustomerDashboard user={user} />
         )}
 
         {/* ── Admin View ─────────────────────────────── */}

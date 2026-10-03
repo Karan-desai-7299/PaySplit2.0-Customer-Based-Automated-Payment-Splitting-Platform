@@ -11,6 +11,8 @@ export function signToken(user) {
       role: user.role,
       vendorId: user.vendorId || null,
       businessName: user.businessName || '',
+      phone: user.phone || '',
+      payeeName: user.payeeName || '',
     },
     JWT_SECRET,
     { expiresIn: '30d' }

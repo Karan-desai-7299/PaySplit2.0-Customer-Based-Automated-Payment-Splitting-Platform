@@ -2,7 +2,7 @@ import { PaymentSession } from '../models/PaymentSession.js';
 import { CustomerTransaction } from '../models/CustomerTransaction.js';
 import { AuditLog } from '../models/AuditLog.js';
 import { buildUpiString, generateQrDataUrl, splitBillAmount } from '../utils/upi.js';
-import { pushPaymentEvent } from '../sse.js';
+import { pushPaymentEvent, pushCustomerEvent } from '../sse.js';
 import {
   createSliceQrCode,
   getActiveGateway,
@@ -44,9 +44,8 @@ async function markSlicePaid(session, slice, rrn, paidVia) {
   );
 
   // ── Instant SSE push ──────────────────────────────────────────────────────
-  // Fires IMMEDIATELY after DB save — vendor browser gets green tick right away
-  // No polling. No delay.
-  pushPaymentEvent(session.sessionId, {
+  // Fires IMMEDIATELY after DB save — vendor & customer browsers get green tick right away
+  const eventPayload = {
     type: 'SLICE_PAID',
     sessionId: session.sessionId,
     sliceId: slice.sliceId,
@@ -60,7 +59,13 @@ async function markSlicePaid(session, slice, rrn, paidVia) {
     completedSlices: session.completedSlices,
     totalSlices: session.totalSlices,
     isFullyComplete: session.status === 'COMPLETED',
-  });
+  };
+
+  pushPaymentEvent(session.sessionId, eventPayload);
+
+  if (session.customerPhone) {
+    pushCustomerEvent(session.customerPhone, eventPayload);
+  }
 
   return session;
 }
@@ -193,6 +198,29 @@ export async function createPaymentSession(req, res) {
         customerPhone: customerPhone || '',
       },
     });
+
+    if (session.customerPhone) {
+      pushCustomerEvent(session.customerPhone, {
+        type: 'BILL_SHARED',
+        session: {
+          sessionId: session.sessionId,
+          vendorName: session.vendorName || session.payeeName,
+          payeeName: session.payeeName,
+          upiId: session.upiId,
+          totalAmount: session.totalAmount,
+          amountPaid: session.amountPaid,
+          remainingAmount: session.remainingAmount,
+          totalSlices: session.totalSlices,
+          completedSlices: session.completedSlices,
+          status: session.status,
+          paymentNote: session.paymentNote,
+          customerName: session.customerName,
+          customerPhone: session.customerPhone,
+          createdAt: session.createdAt,
+          slices: session.slices,
+        },
+      });
+    }
 
     return res.status(201).json({ message: 'Payment session created successfully', session });
   } catch (err) {

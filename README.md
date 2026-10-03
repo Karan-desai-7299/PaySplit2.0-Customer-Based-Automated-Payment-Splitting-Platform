@@ -1,29 +1,35 @@
-# PaySplit — Automated Payment Splitting Platform 🚀
+# PaySplit 2.0 — Customer-Based Automated Payment Splitting Platform 🚀
 
-A modern, high-performance UPI & Payment Gateway dynamic splitting terminal for multi-vendor merchants and retail counters.
+A modern, high-performance UPI payment splitting and customer synchronization platform for retail merchants, vendors, and consumers.
 
-PaySplit automatically splits large bills into multiple dynamic QR codes based on merchant limits (e.g. ₹1,999) or custom portion counts, displays live scannable QR codes for customers, and automatically updates the vendor's terminal screen with real-time green ticks upon payment completion via Server-Sent Events (SSE) and webhooks.
+**PaySplit 2.0** introduces direct passwordless **Customer Login via Mobile Number**, complete **Payment History & Receipts**, live **Vendor-to-Customer Bill Sharing (Real-Time Popoff)**, direct **Google Pay / PhonePe UPI Intent Payments**, and synchronized zero-delay **Green Tick** payment confirmations across both customer and vendor terminals simultaneously.
 
 ---
 
-## ✨ Features
+## ✨ PaySplit 2.0 New Features
 
-- **⚡ Automated Dynamic UPI Splitting**: Split any bill amount into 2, 3, 4, or auto-calculated QR codes within per-transaction limits.
-- **📱 Mobile-First POS Terminal**: Clean, responsive touch interface optimized for vendor mobile phones at retail counters.
-- **🟢 Instant Real-Time Green Ticks**: As soon as a customer scans and pays in Google Pay, PhonePe, Paytm, or any UPI app, the QR code on the vendor screen directly flips into a Green Tick (`Paid ✓`) with a soundbox audio chime.
-- **🎉 Zero-Touch Final Settlement**: Vendors never have to manually verify each transaction. Once all portions are received, the screen displays the **Final One Big Green Tick**.
-- **📊 Customer Information Tracking**: Records customer name and mobile number on every bill, displayed in live History & Stats and detailed breakdown modals.
-- **💳 Payment Gateway Ready**: Built-in support for **Razorpay Dynamic UPI QR Codes** with automatic webhook verification.
-- **🛡️ Multi-Role Security**: Admin console with vendor approvals, custom max split limits, and real-time support chat.
-- **⚖️ Compliance Ready**: Pre-built policy pages (*Terms & Conditions*, *Privacy Policy*, *Refund Policy*, *Contact Us*) for payment gateway merchant verification.
+- **📱 Customer Passwordless Login**: Customers log in directly using their 10-digit mobile number. Zero friction, instant access to personal bills and receipts.
+- **📜 Customer Payment History & Receipts**: Customers can view all past transactions, merchant details, total amounts, date/time, and print official payment receipts with bank UTR reference numbers.
+- **📲 Live "Share Bill to Customer" (Vendor → Customer Screen)**:
+  - When a vendor enters the customer's mobile number and shares the bill, a real-time **Incoming Bill Popoff Modal** instantly appears on the customer's screen.
+  - The customer sees the live bill, split portions, and scannable QR codes immediately.
+- **🚀 One-Tap Google Pay & UPI Intent**:
+  - Customers on mobile can tap **"Pay via Google Pay / UPI"** to open their preferred UPI app (Google Pay, PhonePe, Paytm, BHIM) with payee UPI ID and exact slice amount pre-filled.
+  - Automatic NPCI UPI deep links: `upi://pay?pa=...&am=...&cu=INR...`.
+- **🟢 Synchronized Real-Time Green Ticks**:
+  - When payment is made, the QR code on the **customer screen** turns into an animated **Green Tick (`Paid ✓`)** with audio chime.
+  - Simultaneously, the **vendor terminal** receives an instant SSE broadcast and turns into a **Green Tick** in real-time without refreshing.
+- **🎉 Synchronized All-Complete Celebration**: Once all split portions are paid, both vendor and customer terminals display the full celebration confetti and verified completion breakdown.
+- **⚡ Dynamic Bill Splitting**: Automatically splits large bills above bank transaction limits (e.g., ₹1,999) into 2, 3, 4, or custom portions.
+- **🛡️ Multi-Role Security & Portal**: Dedicated portals for Customers, Vendors, and System Administrators.
 
 ---
 
 ## 🛠️ Tech Stack
 
 - **Frontend**: React 18, Vite, Tailwind CSS, Lucide Icons, Canvas Confetti, QR Code Generator
-- **Backend**: Node.js, Express 5, MongoDB Atlas (Mongoose), Server-Sent Events (SSE), Crypto HMAC-SHA256
-- **Deployment**: Vercel (Frontend), Render / Railway / Node (Backend)
+- **Backend**: Node.js, Express 5, MongoDB Atlas (Mongoose), Server-Sent Events (SSE), JWT Authentication
+- **Payments**: Direct NPCI UPI Intent & QR (`upi://pay`), Soundbox Web Audio Chime, Webhook Integration
 
 ---
 
@@ -35,15 +41,15 @@ PaySplit automatically splits large bills into multiple dynamic QR codes based o
 
 ### 2. Clone Repository
 ```bash
-git clone https://github.com/Karan-desai-7299/PaySplit-Automated-Payment-Splitting-Platform.git
-cd PaySplit-Automated-Payment-Splitting-Platform
+git clone https://github.com/Karan-desai-7299/PaySplit2.0-Customer-Based-Automated-Payment-Splitting-Platform.git
+cd PaySplit2.0-Customer-Based-Automated-Payment-Splitting-Platform
 ```
 
 ### 3. Setup Backend
 ```bash
 cd server
 npm install
-# Configure your environment variables in server/.env
+# Configure server/.env (PORT, MONGODB_URI, JWT_SECRET, ADMIN_USERNAME, ADMIN_PASSWORD)
 npm start
 ```
 
@@ -53,32 +59,15 @@ cd ../client
 npm install
 npm run dev
 ```
-Open **http://localhost:5173** in your browser.
+Open **http://localhost:5173** (or backend at **http://localhost:5000**).
 
 ---
 
-## 🌐 Deploy to Vercel (Frontend)
+## 📱 How PaySplit 2.0 Works
 
-1. Import your GitHub repository into **[Vercel](https://vercel.com/)**.
-2. Select Framework Preset: **Vite**.
-3. Set Root Directory to `./client` (or use the root `vercel.json` provided).
-4. Build Command: `npm run build`
-5. Output Directory: `dist`
-6. Add Environment Variable:
-   - `VITE_API_BASE`: `https://your-backend-api-url.com/api` (or leave empty if using server proxy)
-7. Click **Deploy**!
-
----
-
-## 👤 Author & Support
-
-- **Developer & Owner**: **Karansinh Desai**
-- **Mobile / Helpline**: +91 88306 78600
-- **Email**: karansinhdesai91@gmail.com
-- **LinkedIn**: [linkedin.com/in/karansinh-desai](https://www.linkedin.com/in/karansinh-desai/)
-- **Portfolio**: [karansinh-portfolio.vercel.app](https://karansinh-portfolio.vercel.app/)
-
----
-
-## 📄 License
-This project is licensed under the ISC License.
+1. **Vendor**: Types bill amount (e.g. ₹2,500) & customer mobile number (`9876543210`). The platform splits the bill into dynamic QR codes (e.g. ₹1,999 + ₹501).
+2. **Share Bill**: Vendor clicks **"📲 Share Bill to Customer"**.
+3. **Customer Popoff**: Customer logged in with mobile number `9876543210` instantly receives a live popoff modal with the merchant bill.
+4. **Instant Payment**: Customer taps **"Pay via Google Pay"** or scans the QR, then confirms.
+5. **Simultaneous Green Ticks**: Both customer and vendor screens turn into animated green ticks in real time with an audio confirmation chime.
+6. **Receipt**: Customer views and prints the complete receipt in **Payment History**.

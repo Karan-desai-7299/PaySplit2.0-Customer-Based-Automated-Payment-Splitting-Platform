@@ -41,6 +41,13 @@ import {
   getChatThreads,
   streamChat,
 } from '../controllers/chatController.js';
+import {
+  customerLogin,
+  getCustomerHistory,
+  getCustomerActiveBill,
+  streamCustomer,
+  shareBillWithCustomer,
+} from '../controllers/customerController.js';
 import { authenticateToken, requireRole } from '../middleware/auth.js';
 import { streamPaymentSession } from '../controllers/sseController.js';
 
@@ -48,7 +55,13 @@ const router = express.Router();
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 router.post('/auth/login', login);
+router.post('/auth/customer-login', customerLogin);
 router.get('/auth/me', authenticateToken, getMe);
+
+// ─── Customer Portal (PaySplit 2.0) ───────────────────────────────────────────
+router.get('/customer/history', authenticateToken, getCustomerHistory);
+router.get('/customer/active-bill', authenticateToken, getCustomerActiveBill);
+router.get('/customer/stream/:phone', streamCustomer);
 
 // ─── Public: Customer Scan-to-Pay Endpoints (Option 2) ────────────────────────
 router.get('/pay/session/:sessionId', getPublicPaymentSession);
@@ -151,6 +164,8 @@ router.get('/vendor/customers',     authenticateToken, requireRole('vendor'), ge
 // Payment sessions (vendor-scoped)
 router.post('/vendor/sessions',            authenticateToken, requireRole('vendor'), createPaymentSession);
 router.get('/vendor/sessions/:sessionId',  authenticateToken, requireRole('vendor'), getPaymentSession);
+// Vendor shares bill directly to customer's mobile screen (triggers live popoff)
+router.post('/vendor/sessions/:sessionId/share', authenticateToken, requireRole('vendor'), shareBillWithCustomer);
 // Real-time SSE stream — vendor browser listens here for instant payment events
 router.get('/vendor/stream/:sessionId',    authenticateToken, requireRole('vendor'), streamPaymentSession);
 // Manual verify kept for admin/fallback use

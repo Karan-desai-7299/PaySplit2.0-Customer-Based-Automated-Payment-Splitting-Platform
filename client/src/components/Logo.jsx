@@ -61,6 +61,9 @@ export default function Logo({ size = 'md', showSubtitle = true, className = '' 
           <span className={`font-black text-slate-900 tracking-tight ${textSizes[size]}`}>
             Split
           </span>
+          <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-emerald-500 text-white shadow-2xs">
+            2.0
+          </span>
         </div>
 
         {showSubtitle && (

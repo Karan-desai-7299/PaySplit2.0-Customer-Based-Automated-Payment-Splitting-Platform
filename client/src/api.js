@@ -93,5 +93,18 @@ export const api = {
   getPaymentSessionPublic: (sessionId) => request(`/pay/session/${sessionId}`),
   confirmCustomerPayment: (data) =>
     request('/pay/confirm', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Customer Portal (PaySplit 2.0)
+  customerLogin: (phone, name) =>
+    request('/auth/customer-login', { method: 'POST', body: JSON.stringify({ phone, name }) }),
+  getCustomerHistory: () => request('/customer/history'),
+  getCustomerActiveBill: () => request('/customer/active-bill'),
+
+  // Vendor: Share bill to customer mobile
+  shareBillWithCustomer: (sessionId, customerPhone, customerName) =>
+    request(`/vendor/sessions/${sessionId}/share`, {
+      method: 'POST',
+      body: JSON.stringify({ customerPhone, customerName }),
+    }),
 };
 
